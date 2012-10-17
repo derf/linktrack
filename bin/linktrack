@@ -1,0 +1,72 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use 5.010;
+use WWW::Mechanize;
+
+our $VERSION = '0.0';
+
+my $www = WWW::Mechanize->new;
+
+sub grab_links {
+	my ($lecture, $url) = @_;
+
+	$www->get($url);
+
+	for my $link ($www->links) {
+		my $url = $link->url;
+		my $text = $link->text;
+
+		if (not defined $text) {
+			next;
+		}
+
+		say "$lecture : $text : $url";
+	}
+}
+
+open(my $fh, '<', 'lectures');
+for my $line (<$fh>) {
+	chomp $line;
+	my ($name, $url) = split(/ /, $line);
+	grab_links($name, $url);
+}
+
+__END__
+
+=head1 NAME
+
+=head1 SYNOPSIS
+
+=head1 VERSION
+
+=head1 DESCRIPTION
+
+=head1 OPTIONS
+
+=over
+
+=back
+
+=head1 EXIT STATUS
+
+=head1 CONFIGURATION
+
+None.
+
+=head1 DEPENDENCIES
+
+=over
+
+=back
+
+=head1 BUGS AND LIMITATIONS
+
+=head1 AUTHOR
+
+Copyright (C) 2012 by Daniel Friesel E<lt>derf@finalrewind.orgE<gt>
+
+=head1 LICENSE
+
+  0. You just DO WHAT THE FUCK YOU WANT TO.
