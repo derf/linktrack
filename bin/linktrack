@@ -2,29 +2,88 @@
 
 use strict;
 use warnings;
-use 5.010;
+use 5.014;
+use Date::Format qw(time2str);
+use HTML::Template;
+use Storable qw(nstore retrieve);
 use WWW::Mechanize;
 
 our $VERSION = '0.0';
 
+my $now = time;
 my $www = WWW::Mechanize->new;
+my $outfile = $ARGV[0] // '/dev/stdout';
+my $db_file = 'linktrack_db';
+my %db;
+
+sub load_db {
+	if (-e $db_file) {
+		my $db = retrieve($db_file);
+		%db = %{$db};
+	}
+}
+
+sub save_db {
+	nstore(\%db, $db_file);
+}
 
 sub grab_links {
 	my ($lecture, $url) = @_;
 
+	$db{lectures}{$lecture} = $url;
+
 	$www->get($url);
 
 	for my $link ($www->links) {
-		my $url = $link->url;
+		my $url = $link->url_abs->abs;
 		my $text = $link->text;
 
-		if (not defined $text) {
+		if (not defined $text or $text eq q{}) {
 			next;
 		}
 
-		say "$lecture : $text : $url";
+		$db{entries}{$now}{$lecture}{$url} = $text;
+
 	}
 }
+
+sub write_html {
+	my $template = HTML::Template->new(
+		filename => 'share/index.html',
+	);
+
+	my $prev;
+	my @dates;
+
+	for my $time (sort keys $db{entries}) {
+		say "\n$time";
+		my $date = time2str('%d.%m.%Y', $time);
+		my @changes;
+		for my $lecture (sort keys $db{entries}{$time}) {
+			for my $url (sort keys $db{entries}{$time}{$lecture}) {
+				if (not exists $prev->{$lecture}{$url}) {
+					push(@changes, {
+						lecture => "<a href=\"$db{lectures}{$lecture}\">$lecture</a>",
+						type => "+",
+						link => "<a href=\"$url\">$db{entries}{$time}{$lecture}{$url}</a>",
+					});
+				}
+			}
+		}
+		push(@dates, {date => $date, changes => \@changes});
+		$prev = $db{entries}{$time};
+	}
+	@dates = reverse @dates;
+	$template->param(
+		version => $VERSION,
+		dates => \@dates,
+	);
+	open (my $fh, '>', $outfile);
+	$template->output(print_to => $fh);
+	close($fh);
+}
+
+load_db;
 
 open(my $fh, '<', 'lectures');
 for my $line (<$fh>) {
@@ -32,6 +91,9 @@ for my $line (<$fh>) {
 	my ($name, $url) = split(/ /, $line);
 	grab_links($name, $url);
 }
+
+write_html;
+save_db;
 
 __END__
 
