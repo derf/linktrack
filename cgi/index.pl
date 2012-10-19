@@ -13,7 +13,7 @@ my $db_file = 'linktrack_db';
 my %db;
 
 sub load_db {
-	if (-e $db_file) {
+	if ( -e $db_file ) {
 		my $db = retrieve($db_file);
 		%db = %{$db};
 	}
@@ -24,56 +24,63 @@ sub handle_request {
 	my $station = $self->stash('station');
 	my $via     = $self->stash('via');
 
-	my @sites = split( /,/, $self->param('sites') // q{} );
-
 	load_db;
 
 	my $prev;
 	my @dates;
-	my @lectures = sort keys %{$db{sites}};
+	my @sites = sort keys %{ $db{sites} };
 
-	if (not $self->param('filter')) {
-		for my $lecture (@lectures) {
-			$self->param($lecture => 1);
+	if ( not $self->param('filter') ) {
+		for my $site (@sites) {
+			$self->param( $site => 1 );
 		}
 	}
 
-	for my $time (sort keys $db{entries}) {
-		my $date = time2str('%d.%m.%Y', $time);
+	for my $time ( sort keys $db{entries} ) {
+		my $date = time2str( '%d.%m.%Y', $time );
 		my @changes;
-		for my $lecture (sort keys $db{entries}{$time}) {
-			if ($self->param($lecture) == 0) {
+		for my $site ( sort keys $db{entries}{$time} ) {
+			if ( $self->param($site) == 0 ) {
 				next;
 			}
-			for my $url (sort keys $db{entries}{$time}{$lecture}) {
-				if (not exists $prev->{$lecture}{$url}) {
-					push(@changes, {
-						lecture_name => $lecture,
-						lecture_url => $db{sites}{$lecture},
-						type => '+',
-						link_name => $db{entries}{$time}{$lecture}{$url},
-						link_url => $url,
-					});
+			for my $url ( sort keys $db{entries}{$time}{$site} ) {
+				if ( not exists $prev->{$site}{$url} ) {
+					push(
+						@changes,
+						{
+							site_name => $site,
+							site_url  => $db{sites}{$site},
+							type      => '+',
+							link_name => $db{entries}{$time}{$site}{$url},
+							link_url  => $url,
+						}
+					);
 				}
 			}
 		}
-		push(@dates, {date => $date, changes => \@changes});
+		push(
+			@dates,
+			{
+				date    => $date,
+				changes => \@changes
+			}
+		);
 		$prev = $db{entries}{$time};
 	}
 	@dates = reverse @dates;
 
 	$self->render(
 		'main',
-		lectures => \@lectures,
-		dates => \@dates,
-		title => 'linktrack',
-		version    => $VERSION,
+		sites   => \@sites,
+		dates   => \@dates,
+		title   => 'linktrack',
+		version => $VERSION,
 	);
 }
 
 app->defaults( layout => 'default' );
 
-get '/'               => \&handle_request;
+get '/' => \&handle_request;
 
 app->config(
 	hypnotoad => {
@@ -162,8 +169,8 @@ v<%= $version %>
 %= form_for '/' => begin
 <p>
 %= hidden_field filter => 1
-% for my $lecture (@{$lectures}) {
-<%= check_box $lecture => 1 %> <%= $lecture %>
+% for my $site (@{$sites}) {
+<%= check_box $site => 1 %> <%= $site %>
 % }
 %= submit_button 'show'
 </p>
@@ -174,7 +181,7 @@ v<%= $version %>
 <ul>
 % for my $change (@{$date->{changes}}) {
 <li>
-<a href="<%= $change->{lecture_url} %>"><%= $change->{lecture_name} %></a>
+<a href="<%= $change->{site_url} %>"><%= $change->{site_name} %></a>
 <%= $change->{type} %>
 <a href="<%= $change->{link_url} %>"><%= $change->{link_name} %></a>
 </li>

@@ -10,51 +10,54 @@ use WWW::Mechanize;
 
 our $VERSION = '0.0';
 
-my $now = time;
-my $www = WWW::Mechanize->new;
-my $outfile = $ARGV[0] // '/dev/stdout';
+my $now     = time;
+my $www     = WWW::Mechanize->new;
 my $db_file = 'linktrack_db';
 my %db;
 
 sub load_db {
-	if (-e $db_file) {
+	if ( -e $db_file ) {
 		my $db = retrieve($db_file);
 		%db = %{$db};
 	}
+	return;
 }
 
 sub save_db {
-	nstore(\%db, $db_file);
+	nstore( \%db, $db_file );
+	return;
 }
 
 sub grab_links {
-	my ($lecture, $url) = @_;
+	my ( $sitename, $siteurl ) = @_;
 
-	$db{sites}{$lecture} = $url;
+	$db{sites}{$sitename} = $siteurl;
 
-	$www->get($url);
+	$www->get($siteurl);
 
-	for my $link ($www->links) {
+	for my $link ( $www->links ) {
 		my $url = $link->url_abs->abs;
-		my $text = decode('iso-8859-15', $link->text);
+		my $text = decode( 'iso-8859-15', $link->text );
 
-		if (not defined $text or $text eq q{}) {
+		if ( not defined $text or $text eq q{} ) {
 			next;
 		}
 
-		$db{entries}{$now}{$lecture}{$url} = $text;
+		$db{entries}{$now}{$sitename}{$url} = $text;
 
 	}
+	return;
 }
 
 load_db;
 
-open(my $fh, '<', 'sites');
-for my $line (<$fh>) {
+open( my $fh, '<', 'sites' ) or die("Cannot read sites: $!\n");
+while ( my $line = <$fh> ) {
 	chomp $line;
-	my ($name, $url) = split(/ /, $line);
-	grab_links($name, $url);
+	my ( $name, $url ) = split( / /, $line );
+	grab_links( $name, $url );
 }
+close($fh) or warn("Could not close sites, dafuq: $!\n");
 
 save_db;
 
