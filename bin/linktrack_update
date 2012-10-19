@@ -5,7 +5,6 @@ use warnings;
 use 5.014;
 use Date::Format qw(time2str);
 use Encode qw(decode encode);
-use HTML::Template;
 use Storable qw(nstore retrieve);
 use WWW::Mechanize;
 
@@ -48,41 +47,6 @@ sub grab_links {
 	}
 }
 
-sub write_html {
-	my $template = HTML::Template->new(
-		filename => 'share/index.html',
-	);
-
-	my $prev;
-	my @dates;
-
-	for my $time (sort keys $db{entries}) {
-		my $date = time2str('%d.%m.%Y', $time);
-		my @changes;
-		for my $lecture (sort keys $db{entries}{$time}) {
-			for my $url (sort keys $db{entries}{$time}{$lecture}) {
-				if (not exists $prev->{$lecture}{$url}) {
-					push(@changes, {
-						lecture => "<a href=\"$db{sites}{$lecture}\">$lecture</a>",
-						type => "+",
-						link => encode('UTF-8', "<a href=\"$url\">$db{entries}{$time}{$lecture}{$url}</a>"),
-					});
-				}
-			}
-		}
-		push(@dates, {date => $date, changes => \@changes});
-		$prev = $db{entries}{$time};
-	}
-	@dates = reverse @dates;
-	$template->param(
-		version => $VERSION,
-		dates => \@dates,
-	);
-	open (my $fh, '>', $outfile);
-	$template->output(print_to => $fh);
-	close($fh);
-}
-
 load_db;
 
 open(my $fh, '<', 'sites');
@@ -92,7 +56,6 @@ for my $line (<$fh>) {
 	grab_links($name, $url);
 }
 
-write_html;
 save_db;
 
 __END__
