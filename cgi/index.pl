@@ -26,11 +26,11 @@ sub handle_request {
 
 	my @sites = split( /,/, $self->param('sites') // q{} );
 
+	load_db;
+
 	my $prev;
 	my @dates;
 	my @lectures = sort keys %{$db{sites}};
-
-	load_db;
 
 	if (not $self->param('filter')) {
 		for my $lecture (@lectures) {
