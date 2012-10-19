@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use 5.014;
 use warnings;
+no warnings qw(uninitialized);
 use Mojolicious::Lite;
 use Date::Format qw(time2str);
 use Encode qw(encode);
@@ -27,21 +28,23 @@ sub handle_request {
 
 	my $prev;
 	my @dates;
-	my @lectures;
+	my @lectures = sort keys %{$db{lectures}};
 
 	load_db;
+
+	if (not $self->param('filter')) {
+		for my $lecture (@lectures) {
+			$self->param($lecture => 1);
+		}
+	}
 
 	for my $time (sort keys $db{entries}) {
 		my $date = time2str('%d.%m.%Y', $time);
 		my @changes;
 		for my $lecture (sort keys $db{entries}{$time}) {
-			if (not $lecture ~~ \@lectures) {
-				push(@lectures, $lecture);
-			}
-			if ($self->param('filter') and $self->param($lecture) == 0) {
+			if ($self->param($lecture) == 0) {
 				next;
 			}
-			$self->param($lecture => 1);
 			for my $url (sort keys $db{entries}{$time}{$lecture}) {
 				if (not exists $prev->{$lecture}{$url}) {
 					push(@changes, {
