@@ -28,7 +28,7 @@ sub handle_request {
 
 	my $prev;
 	my @dates;
-	my @lectures = sort keys %{$db{lectures}};
+	my @lectures = sort keys %{$db{sites}};
 
 	load_db;
 
@@ -49,7 +49,7 @@ sub handle_request {
 				if (not exists $prev->{$lecture}{$url}) {
 					push(@changes, {
 						lecture_name => $lecture,
-						lecture_url => $db{lectures}{$lecture},
+						lecture_url => $db{sites}{$lecture},
 						type => '+',
 						link_name => $db{entries}{$time}{$lecture}{$url},
 						link_url => $url,
