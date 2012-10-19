@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use 5.014;
 use Date::Format qw(time2str);
+use Encode qw(decode encode);
 use HTML::Template;
 use Storable qw(nstore retrieve);
 use WWW::Mechanize;
@@ -36,7 +37,7 @@ sub grab_links {
 
 	for my $link ($www->links) {
 		my $url = $link->url_abs->abs;
-		my $text = $link->text;
+		my $text = decode('iso-8859-15', $link->text);
 
 		if (not defined $text or $text eq q{}) {
 			next;
@@ -64,7 +65,7 @@ sub write_html {
 					push(@changes, {
 						lecture => "<a href=\"$db{lectures}{$lecture}\">$lecture</a>",
 						type => "+",
-						link => "<a href=\"$url\">$db{entries}{$time}{$lecture}{$url}</a>",
+						link => encode('UTF-8', "<a href=\"$url\">$db{entries}{$time}{$lecture}{$url}</a>"),
 					});
 				}
 			}
