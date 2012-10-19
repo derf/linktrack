@@ -56,7 +56,6 @@ sub write_html {
 	my @dates;
 
 	for my $time (sort keys $db{entries}) {
-		say "\n$time";
 		my $date = time2str('%d.%m.%Y', $time);
 		my @changes;
 		for my $lecture (sort keys $db{entries}{$time}) {
