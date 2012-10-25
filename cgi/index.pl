@@ -58,13 +58,15 @@ sub handle_request {
 				}
 			}
 		}
-		push(
-			@dates,
-			{
-				date    => $date,
-				changes => \@changes
-			}
-		);
+		if (@changes) {
+			push(
+				@dates,
+				{
+					date    => $date,
+					changes => \@changes
+				}
+			);
+		}
 		$prev = $db{entries}{$time};
 	}
 	@dates = reverse @dates;
