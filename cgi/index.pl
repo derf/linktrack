@@ -6,11 +6,14 @@ use Mojolicious::Lite;
 use Date::Format qw(time2str);
 use Encode qw(encode);
 use Storable;
+use XML::RSS;
 
 our $VERSION = '0.00';
 
 my $db_file = 'linktrack_db';
 my %db;
+
+my $re_pdf = qr{ \. pdf (?: $ | \? ) }iox;
 
 sub load_db {
 	if ( -e $db_file ) {
@@ -19,10 +22,24 @@ sub load_db {
 	}
 }
 
+sub create_rss {
+	my (@dates) = @_;
+
+	my $rss = XML::RSS->new(version => '2.0');
+
+	$rss->channel(
+		title => 'uni.finalrewind.org',
+		link => 'http://uni.finalrewind.org',
+		language => 'de',
+		description => 'TU Dortmund Linktrack',
+		pubDate => "",
+		lastBuildDate => "",
+	);
+}
+
 sub handle_request {
 	my $self    = shift;
-	my $station = $self->stash('station');
-	my $via     = $self->stash('via');
+	my $rss     = $self->param('rss');
 
 	load_db;
 
@@ -44,6 +61,9 @@ sub handle_request {
 				next;
 			}
 			for my $url ( sort keys $db{entries}{$time}{$site} ) {
+				if ($self->param('_pdfonly') and $url !~ $re_pdf) {
+					next;
+				}
 				if ( not exists $prev->{$site}{$url} ) {
 					push(
 						@changes,
@@ -174,6 +194,8 @@ v<%= $version %>
 % for my $site (@{$sites}) {
 <%= check_box $site => 1 %> <%= $site %>
 % }
+<br/>
+<%= check_box '_pdfonly' => 1 %> exclude non-PDF links
 %= submit_button 'show'
 </p>
 %= end
