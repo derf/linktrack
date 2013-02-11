@@ -108,7 +108,6 @@ get '/' => \&handle_request;
 
 app->config(
 	hypnotoad => {
-		accepts  => 10,
 		listen   => ['http://*:8096'],
 		pid_file => '/tmp/linktrack.uni.pid',
 		workers  => 1,
