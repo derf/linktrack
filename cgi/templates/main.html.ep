@@ -1,0 +1,24 @@
+%= form_for '/' => begin
+<p>
+%= hidden_field filter => 1
+% for my $site (@{$sites}) {
+<%= check_box $site => 1 %> <%= $site %>
+% }
+<br/>
+<%= check_box '_pdfonly' => 1 %> exclude non-PDF links
+%= submit_button 'show'
+</p>
+%= end
+
+% for my $date (@{$dates}) {
+<h1> <%= $date->{date} %> </h1>
+<ul>
+% for my $change (@{$date->{changes}}) {
+<li>
+<a href="<%= $change->{site_url} %>"><%= $change->{site_name} %></a>
+<%= $change->{type} %>
+<a href="<%= $change->{link_url} %>"><%= $change->{link_name} %></a>
+</li>
+% }
+</ul>
+% }

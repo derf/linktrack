@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<head>
+	<title><%= $title %></title>
+	<meta charset="utf-8">
+	<style type="text/css">
+
+	html {
+		font-family: Sans-Serif;
+	}
+
+	div.outer {
+		border: 0.2em solid #000066;
+		width: 55em;
+	}
+
+	div.separator {
+		border-bottom: 0.1em solid #000066;
+	}
+
+	div.about {
+		font-family: Sans-Serif;
+		color: #666666;
+	}
+
+	div.about a {
+		color: #000066;
+	}
+
+	div.input-field {
+		margin-top: 1em;
+		clear: both;
+	}
+
+	span.fielddesc {
+		display: block;
+		float: left;
+		width: 15em;
+		text-align: right;
+		padding-right: 0.5em;
+	}
+
+	input, select {
+		border: 1px solid #000066;
+	}
+
+	</style>
+</head>
+<body>
+
+<div class="input-field">
+<% if (my $error = stash 'error') { %>
+<p class="error">
+  Error: <%= $error %><br/>
+</p>
+<% } %>
+
+<%= content %>
+
+<div class="about">
+<a href="https://github.com/derf/linktrack">linktrack</a>
+v<%= $version %>
+</div>
+
+</body>
+</html>
