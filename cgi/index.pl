@@ -40,6 +40,8 @@ sub create_rss {
 sub handle_request {
 	my $self    = shift;
 	my $rss     = $self->param('rss');
+	my $filter  = $self->param('filter');
+	my $pdfonly = $self->param('_pdfonly');
 
 	load_db;
 
@@ -47,7 +49,7 @@ sub handle_request {
 	my @dates;
 	my @sites = sort keys %{ $db{sites} };
 
-	if ( not $self->param('filter') ) {
+	if ( not $filter ) {
 		for my $site (@sites) {
 			$self->param( $site => 1 );
 		}
@@ -61,7 +63,7 @@ sub handle_request {
 				next;
 			}
 			for my $url ( sort keys $db{entries}{$time}{$site} ) {
-				if ($self->param('_pdfonly') and $url !~ $re_pdf) {
+				if ($pdfonly and $url !~ $re_pdf) {
 					next;
 				}
 				if ( not exists $prev->{$site}{$url} ) {
