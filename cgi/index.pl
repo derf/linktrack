@@ -25,14 +25,14 @@ sub load_db {
 sub create_rss {
 	my (@dates) = @_;
 
-	my $rss = XML::RSS->new(version => '2.0');
+	my $rss = XML::RSS->new( version => '2.0' );
 
 	$rss->channel(
-		title => 'uni.finalrewind.org',
-		link => 'http://uni.finalrewind.org',
-		language => 'de',
-		description => 'TU Dortmund Linktrack',
-		pubDate => "",
+		title         => 'uni.finalrewind.org',
+		link          => 'http://uni.finalrewind.org',
+		language      => 'de',
+		description   => 'TU Dortmund Linktrack',
+		pubDate       => "",
 		lastBuildDate => "",
 	);
 }
@@ -63,7 +63,7 @@ sub handle_request {
 				next;
 			}
 			for my $url ( sort keys $db{entries}{$time}{$site} ) {
-				if ($pdfonly and $url !~ $re_pdf) {
+				if ( $pdfonly and $url !~ $re_pdf ) {
 					next;
 				}
 				if ( not exists $prev->{$site}{$url} ) {
@@ -108,9 +108,10 @@ get '/' => \&handle_request;
 
 app->config(
 	hypnotoad => {
-		listen   => ['http://*:8096'],
-		pid_file => '/tmp/linktrack.uni.pid',
-		workers  => 1,
+		accept_interval => 0.2,
+		listen          => ['http://*:8096'],
+		pid_file        => '/tmp/linktrack.uni.pid',
+		workers         => 1,
 	},
 );
 
