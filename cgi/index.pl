@@ -40,8 +40,8 @@ sub create_rss {
 sub handle_request {
 	my $self    = shift;
 	my $rss     = $self->param('rss');
-	my $filter  = $self->param('filter');
-	my $pdfonly = $self->param('_pdfonly');
+	my $filter  = $self->param('filter') // $self->session->{filter} // 0;
+	my $pdfonly = $self->param('_pdfonly') // $self->session->{pdfonly} // 0;
 
 	load_db;
 
@@ -49,10 +49,23 @@ sub handle_request {
 	my @dates;
 	my @sites = sort keys %{ $db{sites} };
 
-	if ( not $filter ) {
+	if ($self->param('filter')) {
+		for my $site (@sites) {
+			$self->session->{$site} = $self->param($site);
+		}
+		$pdfonly = $self->session->{pdfonly} = $self->param('_pdfonly');
+	}
+	elsif ( not $filter ) {
 		for my $site (@sites) {
 			$self->param( $site => 1 );
+			$self->session->{$site} = 1;
 		}
+	}
+	elsif (not $self->param('filter')) {
+		for my $site (@sites) {
+			$self->param($site => $self->session->{$site} // 0);
+		}
+		$self->param( _pdfonly => $pdfonly );
 	}
 
 	for my $time ( sort keys $db{entries} ) {
@@ -115,4 +128,5 @@ app->config(
 	},
 );
 
+app->secret($ENV{MOJOLICIOUS_SECRET});
 app->start();
