@@ -8,7 +8,7 @@ use Encode qw(encode);
 use Storable;
 use XML::RSS;
 
-our $VERSION = '0.00';
+our $VERSION = '0.01';
 
 my $db_file = 'linktrack_db';
 my %db;

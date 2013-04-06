@@ -8,7 +8,7 @@ use Encode qw(decode encode);
 use Storable qw(nstore retrieve);
 use WWW::Mechanize;
 
-our $VERSION = '0.0';
+our $VERSION = '0.01';
 
 my $now     = time;
 my $www     = WWW::Mechanize->new;
@@ -68,6 +68,8 @@ __END__
 =head1 SYNOPSIS
 
 =head1 VERSION
+
+version 0.01
 
 =head1 DESCRIPTION
 
