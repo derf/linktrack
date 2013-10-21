@@ -49,7 +49,7 @@ sub handle_request {
 	my @dates;
 	my @sites = sort keys %{ $db{sites} };
 
-	if ($self->param('filter')) {
+	if ( $self->param('filter') ) {
 		for my $site (@sites) {
 			$self->session->{$site} = $self->param($site);
 		}
@@ -61,9 +61,9 @@ sub handle_request {
 			$self->session->{$site} = 1;
 		}
 	}
-	elsif (not $self->param('filter')) {
+	elsif ( not $self->param('filter') ) {
 		for my $site (@sites) {
-			$self->param($site => $self->session->{$site} // 0);
+			$self->param( $site => $self->session->{$site} // 0 );
 		}
 		$self->param( _pdfonly => $pdfonly );
 	}
@@ -80,14 +80,21 @@ sub handle_request {
 					next;
 				}
 				if ( not exists $prev->{$site}{$url} ) {
+
+					# strip login information
+					my $site_url = $db{sites}{$site};
+					my $url_url  = $url;
+					$site_url =~ s{ : // [^@]+ @ / }{://}ox;
+					$url_url  =~ s{ : // [^@]+ @ / }{://}ox;
+
 					push(
 						@changes,
 						{
 							site_name => $site,
-							site_url  => $db{sites}{$site},
+							site_url  => $site_url,
 							type      => '+',
 							link_name => $db{entries}{$time}{$site}{$url},
-							link_url  => $url,
+							link_url  => $url_url,
 						}
 					);
 				}
@@ -128,5 +135,5 @@ app->config(
 	},
 );
 
-app->secret($ENV{MOJOLICIOUS_SECRET});
+app->secret( $ENV{MOJOLICIOUS_SECRET} );
 app->start();
