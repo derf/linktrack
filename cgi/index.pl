@@ -84,8 +84,8 @@ sub handle_request {
 					# strip login information
 					my $site_url = $db{sites}{$site};
 					my $url_url  = $url;
-					$site_url =~ s{ : // [^@]+ @ / }{://}ox;
-					$url_url  =~ s{ : // [^@]+ @ / }{://}ox;
+					$site_url =~ s{ : // [^@]+ @ }{://}ox;
+					$url_url  =~ s{ : // [^@]+ @ }{://}ox;
 
 					push(
 						@changes,
